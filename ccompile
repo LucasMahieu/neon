@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#Cleans all output files from project and builds project.
+
+./clean
+./compile

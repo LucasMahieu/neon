@@ -1,9 +1,12 @@
 # Object files
 *.o
+!freescale_arm/*
+
 
 # Libraries
 *.lib
 *.a
+!freescale_arm/*
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -17,3 +20,6 @@
 *.app
 *.elf
 *.map
+
+# Dependancies
+*.d

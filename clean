@@ -1,0 +1,4 @@
+#!/bin/bash
+#Removes intermediate and output files. Also removess all backup *~ files
+find . -type d -name "output" | xargs rm -r -v
+find . -name "*~" | xargs rm -v

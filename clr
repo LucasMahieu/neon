@@ -1,0 +1,6 @@
+#!/bin/bash
+#compiles appilacation, connects to gdb server and loads program into processor.
+
+./compile
+~/sat/bin/arm-none-eabi-gdb ./output/neon.elf 
+
