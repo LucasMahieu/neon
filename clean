@@ -1,4 +1,16 @@
 #!/bin/bash
 #Removes intermediate and output files. Also removess all backup *~ files
-find . -type d -name "output" | xargs rm -r -v
-find . -name "*~" | xargs rm -v
+
+scons/scons.py -c #invoke scons script with clean option.
+
+if [ $(find . -name "*~" | wc -l) -eq 0 ]; then
+    echo "No temp files found."
+else
+    find . -name "*~" | xargs rm
+fi
+
+if [ -f neon.map ]; then
+    rm neon.map
+fi
+
+
