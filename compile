@@ -6,7 +6,7 @@ GCC_FLAGS=" -nostdinc -O0 -ffunction-sections -fdata-sections -Wall -c -fmessage
 
 GCC_INCLUDE_DIRECTORIES=" -I./source -I./include -I./freescale_source -I./freescale_include"
 
-LINKER_INCLUDE_DIRECTORIES="/home/bklippenstein/work/neon/freescale_arm"
+LINKER_INCLUDE_DIRECTORIES="./freescale_arm"
 
 LINKER_FLAGS=" -nostartfiles -nodefaultlibs -nostdlib -Xlinker --gc-sections"
 
