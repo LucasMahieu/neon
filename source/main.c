@@ -28,7 +28,7 @@ int main(void)
 	while (1)
 	{
 		GPIOB_PTOR = (uint32_t)0x00080000; //toggle output of portB19
-		while(i < 5000000)
+		while(i < 1000000)
 		{
 			i++;
 		}

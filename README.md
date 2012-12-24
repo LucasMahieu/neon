@@ -7,6 +7,9 @@ C language project using Linaro GCC. Uses some setup files from Freescale, and t
 
 The toolchain used is built by running summon-arm-toolchain.sh. This script is taken from the  https://github.com/esden/summon-arm-toolchain project. Commit: 0570ac76c0fb8c3b841c39513ac0c908a833f401
 
-The toolchain script was modified to remove the usage of openocd and libstm32 and libopencm3.
+The toolchain script was modified to disable the usage of openocd and libstm32 and libopencm3.
 
-Presently the project is built using a homebrew script to call all compiler commands. It isn't very good and should be replaced.
+As of commit e8550b91c4426df6f768f184df4f139696c52aef this project uses an SCons build file.
+To build the project simply run ./scons/scons.py
+To clean the project simply run ./scons/scons.py -c
+
