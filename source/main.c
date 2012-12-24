@@ -9,7 +9,7 @@
 
 #include "derivative.h" /* include peripheral declarations */
 
-#include "MKL25Z4.h" //inlude register difinitions
+#include "MKL25Z4.h" //inlude register definitions
 
 void MCU_init(void); /* Device initialization function declaration */
 
@@ -20,16 +20,14 @@ int main(void)
 	
 	MCU_init(); /* call device initialization */
 		
-	MCU_init(); /* call device initialization */
-	
 	SIM_SCGC5 |= 0x00000400; //enable Port B clock  
 	
 	PORTB_PCR19 |= (uint32_t)0x00000100; //Configure portB19 as GPIO
-	GPIOB_PDDR |=  (uint32_t)0x00040000; //Configure portB19 as output
+	GPIOB_PDDR |= (uint32_t)0x00080000; //Configure portB19 as output
 		
 	while (1)
 	{
-		GPIOB_PTOR = (uint32_t)0x00040000; //toggle output of portB18
+		GPIOB_PTOR = (uint32_t)0x00080000; //toggle output of portB19
 		while(i < 5000000)
 		{
 			i++;
