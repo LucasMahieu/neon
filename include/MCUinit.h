@@ -86,6 +86,9 @@ PE_ISR(isrINT_NMI);
 */
 
 
+/* My ISRs*/
+
+PE_ISR(PORTA_ISR);
 
 
 

@@ -5,12 +5,22 @@ SourceList = Split('''
     source/main.c
     source/__arm_end.c
     source/__arm_start.c
+    source/interrupt.c
     freescale_source/__arm_eabi_init.c
     freescale_source/gcc_ctor_dtor.c
     freescale_source/ROMCopy.c
     ''') #Define list of file to compile
 
-env = DefaultEnvironment(tools = ['gcc', 'gnulink'], CC = '/home/bklippenstein/sat/bin/arm-none-eabi-gcc', PROGSUFFIX = 'elf', LINK = '/home/bklippenstein/sat/bin/arm-none-eabi-ld', LINKCOM ='$LINK $SOURCES $__RPATH $_LIBDIRFLAGS $_LIBFLAGS $LINKFLAGS -o $TARGET') # Set up default environment to use our cross compiler and output an elf file. Also adjust the linker command order.
+#env = DefaultEnvironment(tools = ['gcc', 'gnulink'], CC = '/home/bklippenstein/sat/bin/arm-none-eabi-gcc', PROGSUFFIX = 'elf', LINK = '/home/bklippenstein/sat/bin/arm-none-eabi-ld', LINKCOM ='$LINK $SOURCES $__RPATH $_LIBDIRFLAGS $_LIBFLAGS $LINKFLAGS -o $TARGET') # Set up default environment to use our cross compiler and output an elf file. Also adjust the linker command order.
+
+env = DefaultEnvironment()
+env['CC'] = '/home/bklippenstein/sat/bin/arm-none-eabi-gcc'
+env['PROGSUFFIX'] = 'elf'
+env['LINK'] = '/home/bklippenstein/sat/bin/arm-none-eabi-ld'
+env['LINKCOM'] ='$LINK $SOURCES $__RPATH $_LIBDIRFLAGS $_LIBFLAGS $LINKFLAGS -o $TARGET'
+
+
+print env.subst("The C compiler is: $CC")
 
 env.Append(CCFLAGS = Split('''
     -nostdinc

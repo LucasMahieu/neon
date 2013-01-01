@@ -13,4 +13,9 @@ if [ -f neon.map ]; then
     rm neon.map
 fi
 
+if [ $(find . -name "*.pyc" | wc -l) -eq 0 ]; then
+    echo "No .pyc files found."
+else
+    find . -name "*.pyc" | xargs rm
+fi
 

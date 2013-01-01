@@ -29,6 +29,7 @@
 
 #include <MKL25Z4.h>                   /* I/O map for MKL25Z128VLH4 */
 #include "MCUinit.h"
+#include "interrupt.h"
 
 /* Interrupt vector table type definition */
 typedef void (*const tIsrFunc)(void);
@@ -190,7 +191,8 @@ void MCU_init(void)
 */
 PE_ISR(isr_default)
 {
-  /* Write your interrupt code here ... */
+	  while(1)
+		  ; // You shouldn't be here.
 
 }
 /* end of isr_default */
@@ -208,10 +210,24 @@ PE_ISR(isr_default)
 */
 PE_ISR(isrINT_NMI)
 {
-  /* Write your interrupt code here ... */
-
+  while(1)
+	  ; // You shouldn't be here.
 }
 /* end of isrINT_NMI */
+
+
+
+/*The rest of the ISRs */
+PE_ISR(PORTA_ISR)
+{
+	extern volatile uint32_t buttonPushed;
+	//interruptPendingClear(30);
+	PORTA_PCR1 |= 0x01000000;
+	buttonPushed = 1;
+}
+
+
+
 
 
 
@@ -235,7 +251,7 @@ __attribute__ ((section (".vectortable"))) const tVectorTable __vect_table = { /
   {
    (tIsrFunc)&__thumb_startup,                             /* 1 (0x00000004) (prior: -) */
    (tIsrFunc)&isrINT_NMI,                                  /* 2 (0x00000008) (prior: -2) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 3 (0x0000000C) (prior: -1) */
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 3 (0x0000000C) (prior: -1) hard fault */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 4 (0x00000010) (prior: -) */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 5 (0x00000014) (prior: -) */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 6 (0x00000018) (prior: -) */
@@ -243,43 +259,43 @@ __attribute__ ((section (".vectortable"))) const tVectorTable __vect_table = { /
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 8 (0x00000020) (prior: -) */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 9 (0x00000024) (prior: -) */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 10 (0x00000028) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 11 (0x0000002C) (prior: -) */
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 11 (0x0000002C) (prior: -) supervisor call*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 12 (0x00000030) (prior: -) */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 13 (0x00000034) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 14 (0x00000038) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 15 (0x0000003C) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 16 (0x00000040) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 17 (0x00000044) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 18 (0x00000048) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 19 (0x0000004C) (prior: -) */
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 14 (0x00000038) (prior: -) pendablesrvreq*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 15 (0x0000003C) (prior: -) systick*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 16 (0x00000040) (prior: -) DMA0*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 17 (0x00000044) (prior: -) DMA1*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 18 (0x00000048) (prior: -) DMA2*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 19 (0x0000004C) (prior: -) DMA3*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 20 (0x00000050) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 21 (0x00000054) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 22 (0x00000058) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 23 (0x0000005C) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 24 (0x00000060) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 25 (0x00000064) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 26 (0x00000068) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 27 (0x0000006C) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 28 (0x00000070) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 29 (0x00000074) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 30 (0x00000078) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 31 (0x0000007C) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 32 (0x00000080) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 33 (0x00000084) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 34 (0x00000088) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 35 (0x0000008C) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 36 (0x00000090) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 37 (0x00000094) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 38 (0x00000098) (prior: -) */
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 21 (0x00000054) (prior: -) FTFA*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 22 (0x00000058) (prior: -) PMC*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 23 (0x0000005C) (prior: -) LLWU*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 24 (0x00000060) (prior: -) I2C0*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 25 (0x00000064) (prior: -) I2C1*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 26 (0x00000068) (prior: -) SPI0*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 27 (0x0000006C) (prior: -) SPI1*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 28 (0x00000070) (prior: -) UART0*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 29 (0x00000074) (prior: -) UART1*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 30 (0x00000078) (prior: -) UART2*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 31 (0x0000007C) (prior: -) ADC0*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 32 (0x00000080) (prior: -) CMP0*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 33 (0x00000084) (prior: -) TPM0*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 34 (0x00000088) (prior: -) TPM1*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 35 (0x0000008C) (prior: -) TPM2*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 36 (0x00000090) (prior: -) RTC ALARM*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 37 (0x00000094) (prior: -) RTC SECONDS*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 38 (0x00000098) (prior: -) Periodic Interrupt Timer*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 39 (0x0000009C) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 40 (0x000000A0) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 41 (0x000000A4) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 42 (0x000000A8) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 43 (0x000000AC) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 44 (0x000000B0) (prior: -) */
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 40 (0x000000A0) (prior: -) USB OTG*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 41 (0x000000A4) (prior: -) DAC0*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 42 (0x000000A8) (prior: -) TSI0*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 43 (0x000000AC) (prior: -) MCG*/
+   (tIsrFunc)&UNASSIGNED_ISR,                              /* 44 (0x000000B0) (prior: -) LPTMR0*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 45 (0x000000B4) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 46 (0x000000B8) (prior: -) */
-   (tIsrFunc)&UNASSIGNED_ISR                               /* 47 (0x000000BC) (prior: -) */
+   (tIsrFunc)&PORTA_ISR,                              /* 46 (0x000000B8) (prior: -) Port Control Module A*/
+   (tIsrFunc)&UNASSIGNED_ISR                               /* 47 (0x000000BC) (prior: -) Port Control Module D*/
   }
 };
 
