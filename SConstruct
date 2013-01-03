@@ -6,6 +6,8 @@ SourceList = Split('''
     source/__arm_end.c
     source/__arm_start.c
     source/interrupt.c
+    source/power.c
+    source/systick.c
     freescale_source/__arm_eabi_init.c
     freescale_source/gcc_ctor_dtor.c
     freescale_source/ROMCopy.c
@@ -35,6 +37,7 @@ env.Append(CCFLAGS = Split('''
     -g3
     -gdwarf-2
     -gstrict-dwarf
+    -Wno-unused-but-set-variable
     ''')) #Set compiler flags to use.
     
 env.Append(CPPPATH = Split('''
