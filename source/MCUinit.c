@@ -59,7 +59,8 @@ void __attribute__ ((constructor)) __init_hardware(void)
   SCB_VTOR = (uint32_t)(&__vect_table); /* Set the interrupt vector table position */
   /* Disable the WDOG module */
   /* SIM_COPC: COPT=0,COPCLKS=0,COPW=0 */
-  SIM_COPC = (uint32_t)0x00UL;                  
+  SIM_COPC = (uint32_t)0x00UL;
+
   /* System clock initialization */
   /* SIM_SCGC5: PORTC=1,PORTA=1 */
   SIM_SCGC5 |= (uint32_t)0x0A00UL;     /* Enable clock gate for ports to enable pin routing */
@@ -138,19 +139,23 @@ void MCU_init(void)
       /* Initialization of the SIM module */
   /* PORTA_PCR4: ISF=0,MUX=7 */
   PORTA_PCR4 = (uint32_t)((PORTA_PCR4 & (uint32_t)~0x01000000UL) | (uint32_t)0x0700UL);
+
         /* Initialization of the RCM module */
   /* RCM_RPFW: RSTFLTSEL=0 */
-  RCM_RPFW &= (uint8_t)~(uint8_t)0x1FU;                           
+  RCM_RPFW &= (uint8_t)~(uint8_t)0x1FU;
+
   /* RCM_RPFC: RSTFLTSS=0,RSTFLTSRW=0 */
   RCM_RPFC &= (uint8_t)~(uint8_t)0x07U;                           
-      /* Initialization of the PMC module */
+
+  	  /* Initialization of the PMC module */
   /* PMC_LVDSC1: LVDACK=1,LVDIE=0,LVDRE=1,LVDV=0 */
   PMC_LVDSC1 = (uint8_t)((PMC_LVDSC1 & (uint8_t)~(uint8_t)0x23U) | (uint8_t)0x50U);
   /* PMC_LVDSC2: LVWACK=1,LVWIE=0,LVWV=0 */
   PMC_LVDSC2 = (uint8_t)((PMC_LVDSC2 & (uint8_t)~(uint8_t)0x23U) | (uint8_t)0x40U);
   /* PMC_REGSC: BGEN=0,ACKISO=0,BGBE=0 */
   PMC_REGSC &= (uint8_t)~(uint8_t)0x19U;                           
-        /* Initialization of the LLWU module */
+
+  	  /* Initialization of the LLWU module */
   /* LLWU_PE2: WUPE7=0,WUPE6=0,WUPE5=0 */
   LLWU_PE2 &= (uint8_t)~(uint8_t)0xFCU;                           
   /* LLWU_PE3: WUPE10=0,WUPE9=0,WUPE8=0 */
@@ -215,13 +220,27 @@ PE_ISR(isrINT_NMI)
 }
 /* end of isrINT_NMI */
 
+PE_ISR(systick)
+{
+	extern volatile uint8_t systemTicked;
+	uint32_t DUMMY_READ;
+	DUMMY_READ = SYST_CSR; //Read the CSR register to clear the COUNTFLAG bit.
+	systemTicked = 1;
+}
+
+PE_ISR(llwu)
+{
+
+	PMC_REGSC |= 0x80; // Write to the ACKISO bit to clear wake-up event.
+	interruptPendingClear(7);
+}
 
 
 /*The rest of the ISRs */
 PE_ISR(PORTA_ISR)
 {
 	extern volatile uint32_t buttonPushed;
-	//interruptPendingClear(30);
+	interruptPendingClear(30);
 	PORTA_PCR1 |= 0x01000000;
 	buttonPushed = 1;
 }
@@ -263,7 +282,7 @@ __attribute__ ((section (".vectortable"))) const tVectorTable __vect_table = { /
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 12 (0x00000030) (prior: -) */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 13 (0x00000034) (prior: -) */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 14 (0x00000038) (prior: -) pendablesrvreq*/
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 15 (0x0000003C) (prior: -) systick*/
+   (tIsrFunc)&systick,                   		           /* 15 (0x0000003C) (prior: -) systick*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 16 (0x00000040) (prior: -) DMA0*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 17 (0x00000044) (prior: -) DMA1*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 18 (0x00000048) (prior: -) DMA2*/
@@ -271,7 +290,7 @@ __attribute__ ((section (".vectortable"))) const tVectorTable __vect_table = { /
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 20 (0x00000050) (prior: -) */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 21 (0x00000054) (prior: -) FTFA*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 22 (0x00000058) (prior: -) PMC*/
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 23 (0x0000005C) (prior: -) LLWU*/
+   (tIsrFunc)&llwu,                                        /* 23 (0x0000005C) (prior: -) LLWU*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 24 (0x00000060) (prior: -) I2C0*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 25 (0x00000064) (prior: -) I2C1*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 26 (0x00000068) (prior: -) SPI0*/
