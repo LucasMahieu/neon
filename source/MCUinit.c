@@ -90,32 +90,11 @@ void __attribute__ ((constructor)) __init_hardware(void)
    * functions.
    ***************************************************************************/
 
-  /* System clock initialization */
-  /* SIM_SCGC5: PORTC=1,PORTA=1 */
-  //SIM_SCGC5 |= (uint32_t)0x0A00UL; /* Enable clock gate for ports to enable pin routing */
-  //Removed, this will be handled elsewhere. - B
-
   /* SIM_CLKDIV1: OUTDIV1=1,OUTDIV4=1 */
   SIM_CLKDIV1 = (uint32_t)0x10010000UL; /* Update system prescalers */
 
   /* SIM_SOPT2: PLLFLLSEL=1 */
   SIM_SOPT2 |= (uint32_t)0x00010000UL; /* Select PLL as a clock source for various peripherals */
-
-  /* SIM_SOPT1: OSC32KSEL=0 */
-  //SIM_SOPT1 &= (uint32_t)~0x000C0000UL; /* System oscillator drives 32 kHz clock for various peripherals */
-  //Removed, this will be handled elsewhere. - B
-
-  /* SIM_SOPT2: TPMSRC=1 */
-  //SIM_SOPT2 = (uint32_t)((SIM_SOPT2 & (uint32_t)~0x02000000UL) | (uint32_t)0x01000000UL); /* Set the TPM clock */
-  //Removed, this will be handled elsewhere. - B
-
-  /* PORTA_PCR18: ISF=0,MUX=0 */
-  //PORTA_PCR18 &= (uint32_t)~0x01000700UL;
-  //Removed, this will be handled elsewhere. - B
-
-  /* PORTA_PCR19: ISF=0,MUX=0 */
-  //PORTA_PCR19 &= (uint32_t)~0x01000700UL;
-  //Removed, this will be handled elsewhere. - B
 
   /* Switch to FBE Mode */
   /* OSC0_CR: ERCLKEN=0,EREFSTEN=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
@@ -175,10 +154,6 @@ void __attribute__ ((constructor)) __init_hardware(void)
 	  asm("NOP");
   }
 
-  /* Initialization of the RTC_CLKIN pin */
-  /* PORTC_PCR1: ISF=0,MUX=1 */
-  //PORTC_PCR1 = (uint32_t)((PORTC_PCR1 & (uint32_t)~0x01000600UL) | (uint32_t)0x0100UL);
-  //Removed, this will be handled elsewhere. - B
 }
 
 /*
@@ -191,11 +166,6 @@ void __attribute__ ((constructor)) __init_hardware(void)
 */
 void MCU_init(void)
 {
-      /* Initialization of the SIM module */
-  /* PORTA_PCR4: ISF=0,MUX=7 */
-  //PORTA_PCR4 = (uint32_t)((PORTA_PCR4 & (uint32_t)~0x01000000UL) | (uint32_t)0x0700UL);
-  //Removed, this will be handled elsewhere. - B
-
         /* Initialization of the RCM module */
   /* RCM_RPFW: RSTFLTSEL=0 */
   RCM_RPFW &= (uint8_t)~(uint8_t)0x1FU;
@@ -210,44 +180,6 @@ void MCU_init(void)
   PMC_LVDSC2 = (uint8_t)((PMC_LVDSC2 & (uint8_t)~(uint8_t)0x23U) | (uint8_t)0x40U);
   /* PMC_REGSC: BGEN=0,ACKISO=0,BGBE=0 */
   PMC_REGSC &= (uint8_t)~(uint8_t)0x19U;                           
-
-  /*	  // Initialization of the LLWU module
-  // LLWU_PE2: WUPE7=0,WUPE6=0,WUPE5=0
-  LLWU_PE2 &= (uint8_t)~(uint8_t)0xFCU;                           
-  // LLWU_PE3: WUPE10=0,WUPE9=0,WUPE8=0
-  LLWU_PE3 &= (uint8_t)~(uint8_t)0x3FU;                           
-  // LLWU_PE4: WUPE15=0,WUPE14=0
-  LLWU_PE4 &= (uint8_t)~(uint8_t)0xF0U;                           
-  // LLWU_ME: WUME7=0,WUME5=0,WUME4=0,WUME1=1,WUME0=0
-  LLWU_ME = (uint8_t)((LLWU_ME & (uint8_t)~(uint8_t)0xB1U) | (uint8_t)0x02U);
-  // LLWU_FILT1: FILTF=1,FILTE=0,FILTSEL=0
-  LLWU_FILT1 = (uint8_t)0x80U;                          
-  // LLWU_FILT2: FILTF=1,FILTE=0,FILTSEL=0
-  LLWU_FILT2 = (uint8_t)0x80U;                          
-  // SMC_PMPROT: AVLP=1,ALLS=1,AVLLS=1
-  SMC_PMPROT = (uint8_t)0x2AU;   // Setup Power mode protection register*/
-
-  //All the LLWU code removed, this will be handled elsewhere. - B
-
-   /*Common initialization of the CPU registers */
-  /* PORTA_PCR20: ISF=0,MUX=7 */
-  //PORTA_PCR20 = (uint32_t)((PORTA_PCR20 & (uint32_t)~0x01000000UL) | (uint32_t)0x0700UL);
-  //Don't even know what was going on here. MUX 7 doesn't make sense for portA20.
-
-
-  /* NVIC_IPR1: PRI_7=0,PRI_6=0 */
-  //NVIC_IPR1 &= (uint32_t)~0xFFFF0000UL;
-  //This sets the priority for the LLWU and PMC modules. Done Elsewhere.
-
-  /* NVIC_ISER: SETENA|=0x80 */
-  //NVIC_ISER |= (uint32_t)0x80UL;
-  //Enables Interrupt for LLWU, this will be done somewhere else.
-
-  /* ### */
-  /*lint -save  -e950 Disable MISRA rule (1.1) checking. */
-     //asm("CPSIE i");
-  /*lint -restore Enable MISRA rule (1.1) checking. */
-
 
   /****************************************************************************
    * End section modified by Bryce Klippenstein - Jan 2, 2013
