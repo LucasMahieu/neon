@@ -14,6 +14,11 @@ void vllsEnable(void)
 	SMC_PMPROT |= (uint8_t)0x02; //Write 1 to the AVLLS bit. Write once register, no need to clear.
 }
 
+void llsEnable(void)
+{
+	SMC_PMPROT |= (uint8_t)0x08; // SMC_PMPROT : ALLS=1
+}
+
 void vllsConfigure(uint8_t mode)
 {
 	SMC_PMCTRL &= (uint8_t)0xF8;
@@ -37,22 +42,36 @@ void vllsConfigure(uint8_t mode)
 	}
 }
 
+void llsConfigure(void)
+{
+	SMC_PMCTRL &= (uint8_t)0xF8;
+	SMC_PMCTRL |= (uint8_t)0x03; //SMC_PMPROT : STOPM=0b011
+}
+
 void vllsEnter(void)
 {
-	uint32_t* scb_scr = (uint32_t*)0xE000ED10;
 	uint32_t DUMMY_READ;
-	*scb_scr |= (uint32_t)0x00000002;
-	*scb_scr |= (uint32_t)0x00000004; // Write 1b to the SLEEPDEEP bit in the SCR - See Arm Architecture v6m manual for details.
-	DUMMY_READ = *scb_scr;
-	//__wfi();
+	SCB_SCR |= (uint32_t)0x00000004; // Write 1b to the SLEEPDEEP bit in the SCR - See Arm Architecture v6m manual for details.
+	DUMMY_READ = SCB_SCR;
+	asm("WFI");
+}
+
+void llsEnter(void)
+{
+	uint32_t DUMMY_READ;
+	SCB_SCR |= (uint32_t)0x00000004; // Write 1b to the SLEEPDEEP bit in the SCR - See Arm Architecture v6m manual for details.
+	DUMMY_READ = SCB_SCR;
 	asm("WFI");
 }
 
 void llwuConfigure(void)
 {
+	//uint32_t* llwu_pe2 = (uint32_t*)0x4007C000;
 	SIM_SCGC5 |= 0x00000400; //enable Port B clock
 	PORTB_PCR0 |= (uint32_t)0x00000102; //Configure portB0 as GPIO with pullup.
 	GPIOB_PDDR &= ~(uint32_t)0x00000001; //Configure portB0 as input.
 
-	LLWU_PE2 |= (uint8_t)0x08; // Write 10b to WUPE5 bitfield. Configure PortB0 to trigger wake-up on falling edge.
+	LLWU_PE2 |= (uint8_t)0x0C; // Write 10b to WUPE5 bitfield. Configure PortB0 to trigger wake-up on falling edge.
+	LLWU_FILT1 |= (uint8_t)0x65; //Configure LLWU_P5 to be filtered on both edges.
+
 }

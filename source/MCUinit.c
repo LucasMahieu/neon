@@ -50,6 +50,7 @@
 #include <MKL25Z4.h>                   /* I/O map for MKL25Z128VLH4 */
 #include "MCUinit.h"
 #include "interrupt.h"
+#include "board.h"
 
 /* Interrupt vector table type definition */
 typedef void (*const tIsrFunc)(void);
@@ -76,7 +77,13 @@ void __attribute__ ((constructor)) __init_hardware(void)
 {
   /*** ### MKL25Z128VLH4 "Cpu" init code ... ***/
   /*** PE initialization code after reset ***/
-  SCB_VTOR = (uint32_t)(&__vect_table); /* Set the interrupt vector table position */
+
+
+	if((uint32_t)SCB_VTOR != (uint32_t)&__vect_table)
+	{
+		SCB_VTOR = (uint32_t)(&__vect_table); /* Set the interrupt vector table position */
+	}
+
   /* Disable the WDOG module */
   /* SIM_COPC: COPT=0,COPCLKS=0,COPW=0 */
   SIM_COPC = (uint32_t)0x00UL;
@@ -99,16 +106,27 @@ void __attribute__ ((constructor)) __init_hardware(void)
   /* Switch to FBE Mode */
   /* OSC0_CR: ERCLKEN=0,EREFSTEN=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
   OSC0_CR = (uint8_t)0x00U;                          
+
   /* MCG_C2: LOCRE0=0,RANGE0=2,HGO0=1,EREFS0=1,LP=0,IRCS=0 */
-  MCG_C2 = (uint8_t)0x2CU;                          
+  MCG_C2 = (uint8_t)0x2CU;
+
   /* MCG_C1: CLKS=2,FRDIV=3,IREFS=0,IRCLKEN=1,IREFSTEN=0 */
   MCG_C1 = (uint8_t)0x9AU;                          
+
   /* MCG_C4: DMX32=0,DRST_DRS=0 */
   MCG_C4 &= (uint8_t)~(uint8_t)0xE0U;                           
+
   /* MCG_C5: PLLCLKEN0=0,PLLSTEN0=0,PRDIV0=1 */
   MCG_C5 = (uint8_t)0x01U;                          
+
   /* MCG_C6: LOLIE0=0,PLLS=0,CME0=0,VDIV0=0 */
-  MCG_C6 = (uint8_t)0x00U;                          
+  MCG_C6 = (uint8_t)0x00U;
+
+  	if (RCM_SRS0 & RCM_SRS0_WAKEUP_MASK) // If waking up from low power mode, not cold boot:
+	{
+		PMC_REGSC |= 0x08; // Write to the ACKISO bit to clear wake-up event. This unlocks the MCG and GIOs.
+	}
+
   while((MCG_S & MCG_S_IREFST_MASK) != 0x00U)
   { /* Check that the source of the FLL reference clock is the external reference clock. */
 	  asm("NOP");
@@ -141,14 +159,19 @@ void __attribute__ ((constructor)) __init_hardware(void)
   /* Switch to PEE Mode */
   /* OSC0_CR: ERCLKEN=0,EREFSTEN=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
   OSC0_CR = (uint8_t)0x00U;                          
+
   /* MCG_C1: CLKS=0,FRDIV=3,IREFS=0,IRCLKEN=1,IREFSTEN=0 */
   MCG_C1 = (uint8_t)0x1AU;                          
+
   /* MCG_C2: LOCRE0=0,RANGE0=2,HGO0=1,EREFS0=1,LP=0,IRCS=0 */
   MCG_C2 = (uint8_t)0x2CU;                          
+
   /* MCG_C5: PLLCLKEN0=0,PLLSTEN0=0,PRDIV0=1 */
   MCG_C5 = (uint8_t)0x01U;                          
+
   /* MCG_C6: LOLIE0=0,PLLS=1,CME0=0,VDIV0=0 */
   MCG_C6 = (uint8_t)0x40U;                          
+
   while((MCG_S & 0x0CU) != 0x0CU)
   {    /* Wait until output of the PLL is selected */
 	  asm("NOP");
@@ -205,8 +228,12 @@ void MCU_init(void)
 */
 PE_ISR(isr_default)
 {
-	  while(1)
-		  ; // You shouldn't be here.
+	SIM_SCGC5 |= 0x00000400; //enable Port B clock
+	PORTB_PCR18 |= (uint32_t)0x00000100; //Configure portB18 as GPIO (RED)
+	GPIOB_PDDR |= (uint32_t)0x00040000; //Configure portB18 as output
+	GPIOB_PCOR |= (uint32_t)0x00040000;
+	while(1)
+		; // You shouldn't be here.
 
 }
 /* end of isr_default */
@@ -224,8 +251,12 @@ PE_ISR(isr_default)
 */
 PE_ISR(isrINT_NMI)
 {
-  while(1)
-	  ; // You shouldn't be here.
+	SIM_SCGC5 |= 0x00000400; //enable Port B clock
+	PORTB_PCR18 |= (uint32_t)0x00000100; //Configure portB18 as GPIO (RED)
+	GPIOB_PDDR |= (uint32_t)0x00040000; //Configure portB18 as output
+	GPIOB_PCOR |= (uint32_t)0x00040000;
+	while(1)
+		; // You shouldn't be here.
 }
 /* end of isrINT_NMI */
 
@@ -239,8 +270,21 @@ PE_ISR(systick)
 
 PE_ISR(llwu)
 {
+//	__init_hardware(); //Rerun all init functions upon wake-up.
+	MCU_init();
+	boardInit();
+	extern uint32_t DUMMYREAD;
 
-	PMC_REGSC |= 0x80; // Write to the ACKISO bit to clear wake-up event.
+	SIM_SCGC5 |= 0x00000400; //enable Port B clock
+	PORTB_PCR0 |= (uint32_t)0x00000102; //Configure portB0 as GPIO with pullup.
+	GPIOB_PDDR &= ~(uint32_t)0x00000001; //Configure portB0 as input.
+
+	LLWU_F1 |= 0x20; //clear wakeup flag on WUF5
+	LLWU_FILT1 |= 0x80;
+	interruptPendingClear(7);
+	//PMC_REGSC |= 0x08; // Write to the ACKISO bit to clear wake-up event.
+	DUMMYREAD = PMC_REGSC;
+
 	interruptPendingClear(7);
 }
 
@@ -248,9 +292,10 @@ PE_ISR(llwu)
 /*The rest of the ISRs */
 PE_ISR(PORTA_ISR)
 {
+
 	extern volatile uint32_t buttonPushed;
 	interruptPendingClear(30);
-	PORTA_PCR1 |= 0x01000000;
+	PORTA_PCR12 |= 0x01000000;
 	buttonPushed = 1;
 }
 
