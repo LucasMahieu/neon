@@ -15,7 +15,14 @@ SourceList = Split('''
     freescale_source/ROMCopy.c
     ''') #Define list of file to compile
 
-#env = DefaultEnvironment(tools = ['gcc', 'gnulink'], CC = '/home/bklippenstein/sat/bin/arm-none-eabi-gcc', PROGSUFFIX = 'elf', LINK = '/home/bklippenstein/sat/bin/arm-none-eabi-ld', LINKCOM ='$LINK $SOURCES $__RPATH $_LIBDIRFLAGS $_LIBFLAGS $LINKFLAGS -o $TARGET') # Set up default environment to use our cross compiler and output an elf file. Also adjust the linker command order.
+env = DefaultEnvironment(Split('''
+    tools = ['gcc', 'gnulink']
+    CC = '/home/bklippenstein/sat/bin/arm-none-eabi-gcc'
+    PROGSUFFIX = 'elf'
+    LINK = '/home/bklippenstein/sat/bin/arm-none-eabi-ld'
+    LINKCOM ='$LINK $SOURCES $__RPATH $_LIBDIRFLAGS $_LIBFLAGS $LINKFLAGS -o $TARGET'
+    '''))
+    # Set up default environment to use our cross compiler and output an elf file. Also adjust the linker command order.
 
 env = DefaultEnvironment()
 env['CC'] = '/home/bklippenstein/sat/bin/arm-none-eabi-gcc'
@@ -46,11 +53,14 @@ env.Append(CPPPATH = Split('''
     ./include
     ./freescale_source
     ./freescale_include
+    /home/bklippenstein/sat/arm-none-eabi/include
+    /home/bklippenstein/sat/arm-none-eabi/include/sys/
+    /home/bklippenstein/sat/lib/
+    /home/bklippenstein/sat/lib/gcc/arm-none-eabi/4.6.2/plugin/include/c
     ''')) #Set include directories for GCC
     
 env.Append(LINKFLAGS = Split('''
     -nostartfiles
-    -nodefaultlibs
     -nostdlib
     --gc-sections
     --start-group
@@ -60,8 +70,16 @@ env.Append(LINKFLAGS = Split('''
     -n
     -Tsource/MKL25Z128_flash.ld
     ''')) #Set linker flags to use.
+    #    -nodefaultlibs
+    
 
-env.Append(LIBPATH = ['/home/bklippenstein/work/neon/freescale_arm'])
+env.Append(LIBPATH = [Split('''
+    /home/bklippenstein/work/neon/freescale_arm
+    /home/bklippenstein/sat/arm-none-eabi/include
+    /home/bklippenstein/sat/arm-none-eabi/include/sys/
+    /home/bklippenstein/sat/lib/
+    /home/bklippenstein/sat/lib/gcc/arm-none-eabi/4.6.2/plugin/include/c
+    ''')])
     
 ObjectList = env.StaticObject(source = SourceList) #Compile our source files into a buch of object file. Yet to be linked.
 
