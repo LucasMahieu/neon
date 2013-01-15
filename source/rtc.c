@@ -13,7 +13,6 @@
 
 void rtcInit(void)
 {
-	SIM_SOPT1 |= (uint32_t)0x000C0000; // Configure the RTC to use the 1kHz low power oscillator.
 	SIM_SCGC6 |= (uint32_t)0x20000000; // Turn on the RTC.
 
 	//THe following actions configure port E0 to output a 1kHz signal based on the real-time clock.
