@@ -98,85 +98,43 @@ void __attribute__ ((constructor)) __init_hardware(void)
    * functions.
    ***************************************************************************/
 
-  /* SIM_CLKDIV1: OUTDIV1=1,OUTDIV4=1 */
-  SIM_CLKDIV1 = (uint32_t)0x10010000UL; /* Update system prescalers */
+    /* SIM_CLKDIV1: OUTDIV1=0,OUTDIV4=1 */
+    SIM_CLKDIV1 = (uint32_t)0x00010000UL; /* Update system prescalers */
+    /* SIM_SOPT2: PLLFLLSEL=0 */
+    SIM_SOPT2 &= (uint32_t)~0x00010000UL; /* Select FLL as a clock source for various peripherals */
+    /* SIM_SOPT1: OSC32KSEL=0 */
+    SIM_SOPT1 &= (uint32_t)~0x000C0000UL; /* System oscillator drives 32 kHz clock for various peripherals */
 
-  /* SIM_SOPT2: PLLFLLSEL=1 */
-  SIM_SOPT2 |= (uint32_t)0x00010000UL; /* Select PLL as a clock source for various peripherals */
 
-  /* Switch to FBE Mode */
-  /* OSC0_CR: ERCLKEN=0,EREFSTEN=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
-  OSC0_CR = (uint8_t)0x00U;                          
+     /* MCG_SC: FCRDIV=0 */
+     MCG_SC = (uint8_t)((MCG_SC & (uint8_t)~(uint8_t)0x0EU) | (uint8_t)0x00U);
+     /* Switch to FEE Mode */
+     /* MCG_C2: LOCRE0=0,RANGE0=0,HGO0=0,EREFS0=1,LP=0,IRCS=1 */
+     MCG_C2 = (uint8_t)0x05U;
+     /* OSC0_CR: ERCLKEN=1,EREFSTEN=1,SC2P=1,SC4P=0,SC8P=0,SC16P=1 */
+     OSC0_CR = (uint8_t)0xA9U;
+     /* MCG_C1: CLKS=0,FRDIV=0,IREFS=0,IRCLKEN=0,IREFSTEN=0 */
+     MCG_C1 = (uint8_t)0x00U;
+     /* MCG_C4: DMX32=1,DRST_DRS=1 */
+     MCG_C4 = (uint8_t)((MCG_C4 & (uint8_t)~(uint8_t)0x40U) | (uint8_t)0xA0U);
+     /* MCG_C5: PLLCLKEN0=0,PLLSTEN0=0,PRDIV0=0 */
+     MCG_C5 = (uint8_t)0x00U;
+     /* MCG_C6: LOLIE0=0,PLLS=0,CME0=0,VDIV0=0 */
+     MCG_C6 = (uint8_t)0x00U;
 
-  /* MCG_C2: LOCRE0=0,RANGE0=2,HGO0=1,EREFS0=1,LP=0,IRCS=0 */
-  MCG_C2 = (uint8_t)0x2CU;
+ 	if (RCM_SRS0 & RCM_SRS0_WAKEUP_MASK) // If waking up from low power mode, not cold boot:
+ 	{
+ 		PMC_REGSC |= 0x08; // Write to the ACKISO bit to clear wake-up event. This unlocks the MCG and GIOs.
+ 	}
 
-  /* MCG_C1: CLKS=2,FRDIV=3,IREFS=0,IRCLKEN=1,IREFSTEN=0 */
-  MCG_C1 = (uint8_t)0x9AU;                          
-
-  /* MCG_C4: DMX32=0,DRST_DRS=0 */
-  MCG_C4 &= (uint8_t)~(uint8_t)0xE0U;                           
-
-  /* MCG_C5: PLLCLKEN0=0,PLLSTEN0=0,PRDIV0=1 */
-  MCG_C5 = (uint8_t)0x01U;                          
-
-  /* MCG_C6: LOLIE0=0,PLLS=0,CME0=0,VDIV0=0 */
-  MCG_C6 = (uint8_t)0x00U;
-
-  	if (RCM_SRS0 & RCM_SRS0_WAKEUP_MASK) // If waking up from low power mode, not cold boot:
-	{
-		PMC_REGSC |= 0x08; // Write to the ACKISO bit to clear wake-up event. This unlocks the MCG and GIOs.
-	}
-
-  while((MCG_S & MCG_S_IREFST_MASK) != 0x00U)
-  { /* Check that the source of the FLL reference clock is the external reference clock. */
-	  asm("NOP");
-  }
-  while((MCG_S & 0x0CU) != 0x08U)
-  {    /* Wait until external reference clock is selected as MCG output */
-	  asm("NOP");
-  }
-
-  /* Switch to PBE Mode */
-  /* OSC0_CR: ERCLKEN=0,EREFSTEN=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
-  OSC0_CR = (uint8_t)0x00U;                          
-  /* MCG_C1: CLKS=2,FRDIV=3,IREFS=0,IRCLKEN=1,IREFSTEN=0 */
-  MCG_C1 = (uint8_t)0x9AU;                          
-  /* MCG_C2: LOCRE0=0,RANGE0=2,HGO0=1,EREFS0=1,LP=0,IRCS=0 */
-  MCG_C2 = (uint8_t)0x2CU;                          
-  /* MCG_C5: PLLCLKEN0=0,PLLSTEN0=0,PRDIV0=1 */
-  MCG_C5 = (uint8_t)0x01U;                          
-  /* MCG_C6: LOLIE0=0,PLLS=1,CME0=0,VDIV0=0 */
-  MCG_C6 = (uint8_t)0x40U;                          
-  while((MCG_S & 0x0CU) != 0x08U)
-  {    /* Wait until external reference clock is selected as MCG output */
-	  asm("NOP");
-  }
-  while((MCG_S & MCG_S_LOCK0_MASK) == 0x00U)
-  { /* Wait until locked */
-	  asm("NOP");
-  }
-
-  /* Switch to PEE Mode */
-  /* OSC0_CR: ERCLKEN=0,EREFSTEN=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
-  OSC0_CR = (uint8_t)0x00U;                          
-
-  /* MCG_C1: CLKS=0,FRDIV=3,IREFS=0,IRCLKEN=1,IREFSTEN=0 */
-  MCG_C1 = (uint8_t)0x1AU;                          
-
-  /* MCG_C2: LOCRE0=0,RANGE0=2,HGO0=1,EREFS0=1,LP=0,IRCS=0 */
-  MCG_C2 = (uint8_t)0x2CU;                          
-
-  /* MCG_C5: PLLCLKEN0=0,PLLSTEN0=0,PRDIV0=1 */
-  MCG_C5 = (uint8_t)0x01U;                          
-
-  /* MCG_C6: LOLIE0=0,PLLS=1,CME0=0,VDIV0=0 */
-  MCG_C6 = (uint8_t)0x40U;                          
-
-  while((MCG_S & 0x0CU) != 0x0CU)
-  {    /* Wait until output of the PLL is selected */
-	  asm("NOP");
-  }
+     while((MCG_S & MCG_S_IREFST_MASK) != 0x00U)
+     {
+    	 ;/* Check that the source of the FLL reference clock is the external reference clock. */
+     }
+     while((MCG_S & 0x0CU) != 0x00U)
+     {
+    	 ;/* Wait until output of the FLL is selected */
+     }
 
 }
 
