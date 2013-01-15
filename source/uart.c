@@ -7,6 +7,8 @@
  */
 
 #include "MKL25Z4.h"
+#include "math.h"
+#include "uart.h"
 
 void uart0Config(void)
 {
@@ -89,7 +91,7 @@ uint8_t uart0SendByte(uint8_t data)
 	return 1;
 }
 
-uint32_t uart0Send(uint8_t* data, uint8_t numBytes)
+uint32_t uart0Send_s(uint8_t* data, uint8_t numBytes)
 {
 	int i = 0;
 	uint32_t bytesSent = 0;
@@ -100,3 +102,61 @@ uint32_t uart0Send(uint8_t* data, uint8_t numBytes)
 	}
 	return bytesSent;
 }
+
+uint32_t uart0Send_i(uint32_t data)
+{
+	uint8_t magnitude;
+	uint8_t leadingZero = 1;
+	uint32_t temp;
+	uint32_t bytesSent = 0;
+
+	if(data < 0)
+	{
+		return -1;
+	}
+
+	if(data == 0)
+	{
+		uart0SendByte((uint8_t)48); // Special case if data is 0
+		return 1;
+	}
+
+	for(magnitude=10; magnitude > 0; magnitude--)
+	{
+		temp = data / pow(10, (magnitude-1)); //pull off most significant digit
+
+		if (temp != 0)
+		{
+			leadingZero = 0;
+		}
+
+		if(!leadingZero) // Don't print leading zeros.
+		{
+			uart0SendByte((uint8_t)temp+48); // Convert temp number to ascii char
+			bytesSent++;
+		}
+
+		data -= temp * pow(10, (magnitude-1));
+	}
+
+	return bytesSent;
+}
+
+uint32_t uart0Send_n(char* data)
+{
+	int i = 0;
+	uint32_t bytesSent = 0;
+
+	while(1)
+	{
+		if(data[i] == '\0')
+			break;
+
+		bytesSent += uart0SendByte(data[i]);
+		i++;
+	}
+	return bytesSent;
+}
+
+
+

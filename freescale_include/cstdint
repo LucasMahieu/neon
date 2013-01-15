@@ -1,5 +1,5 @@
 /* EWL
- * Copyright © 1995-2009 Freescale Corporation.  All rights reserved.
+ * Copyright ï¿½ 1995-2009 Freescale Corporation.  All rights reserved.
  *
  * $Date: 2012/06/01 15:39:37 $
  * $Revision: 1.1 $
@@ -9,6 +9,7 @@
 #define _EWL_CSTDINT
 
 #include <ansi_parms.h>
+#include "wchar_t.h"
 
 #if !_EWL_USING_CW_C_HEADERS_
 	#include <stdint.h>

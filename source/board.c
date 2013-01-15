@@ -15,6 +15,8 @@
 #include "systick.h"
 #include "board.h"
 #include "uart.h"
+#include "rtc.h"
+#include "time.h"
 
 void boardInit(void)
 {
@@ -51,4 +53,12 @@ void boardInit(void)
 	interruptEnable(7); //Enable LLWU interrupt.
 
 	systickEnable();
+
+	rtcInit();
+	rtcSet((time_t)1358206730);
+	rtcStart();
+
+	interruptSetPriority(21,0); // Configure RTC Seconds interrupt as highest priority.
+	interruptEnable(21); //Enable RTC Seconds interrupt.
+
 }

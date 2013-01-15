@@ -10,25 +10,28 @@ SourceList = Split('''
     source/board.c
     source/uart.c
     source/main.c
+    source/newlibStubs.c
+    source/rtc.c
     freescale_source/__arm_eabi_init.c
     freescale_source/gcc_ctor_dtor.c
     freescale_source/ROMCopy.c
     ''') #Define list of file to compile
 
-env = DefaultEnvironment(Split('''
-    tools = ['gcc', 'gnulink']
-    CC = '/home/bklippenstein/sat/bin/arm-none-eabi-gcc'
-    PROGSUFFIX = 'elf'
-    LINK = '/home/bklippenstein/sat/bin/arm-none-eabi-ld'
-    LINKCOM ='$LINK $SOURCES $__RPATH $_LIBDIRFLAGS $_LIBFLAGS $LINKFLAGS -o $TARGET'
-    '''))
+
+#env = DefaultEnvironment(Split('''
+#    tools = ['gcc', 'gnulink']
+#    CC = '/home/bklippenstein/sat/bin/arm-none-eabi-gcc'
+#    PROGSUFFIX = 'elf'
+#    LINK = 'home/bklippenstein/sat/bin/arm-none-eabi-ld'
+#    LINKCOM ='$LINK $SOURCES $__RPATH $_LIBFLAGS $_LIBDIRFLAGS $LINKFLAGS -o $TARGET'
+#    '''))
     # Set up default environment to use our cross compiler and output an elf file. Also adjust the linker command order.
 
 env = DefaultEnvironment()
 env['CC'] = '/home/bklippenstein/sat/bin/arm-none-eabi-gcc'
 env['PROGSUFFIX'] = 'elf'
 env['LINK'] = '/home/bklippenstein/sat/bin/arm-none-eabi-ld'
-env['LINKCOM'] ='$LINK $SOURCES $__RPATH $_LIBDIRFLAGS $_LIBFLAGS $LINKFLAGS -o $TARGET'
+env['LINKCOM'] ='$LINK $SOURCES $_LIBFLAGS $_LIBDIRFLAGS $__RPATH $LINKFLAGS -o $TARGET'
 
 
 print env.subst("The C compiler is: $CC")
@@ -50,36 +53,51 @@ env.Append(CCFLAGS = Split('''
     ''')) #Set compiler flags to use.
     
 env.Append(CPPPATH = Split('''
-    ./include
-    ./freescale_source
-    ./freescale_include
-    /home/bklippenstein/sat/arm-none-eabi/include
-    /home/bklippenstein/sat/arm-none-eabi/include/sys/
-    /home/bklippenstein/sat/lib/
-    /home/bklippenstein/sat/lib/gcc/arm-none-eabi/4.6.2/plugin/include/c
+    include
+    freescale_source
+    freescale_include
+    ../../sat/arm-none-eabi/lib/thumb/cortex-m0/
+    ../../sat/lib/gcc/arm-none-eabi/4.7.3/thumb/cortex-m0
+    ../../sat/arm-none-eabi/include
+    ../../sat/arm-none-eabi/include/sys/
+    ../../sat/lib/
+    ../../sat/lib/gcc/arm-none-eabi/4.6.2/plugin/include/c
     ''')) #Set include directories for GCC
-    
+    #../../sat/arm-none-eabi/lib/thumb/cortex-m0/
+    #../../Freescale/MCU/ARM_GCC_Support/ewl/lib/armv6-m/
+    #../../Freescale/Cross_Tools/arm-none-eabi-gcc-4_6_2/lib/gcc/arm-none-eabi/4.6.2/armv6-m/
+    #objects
 env.Append(LINKFLAGS = Split('''
     -nostartfiles
     -nostdlib
     --gc-sections
     --start-group
-    -lc
     --end-group
     -Map neon.map
     -n
     -Tsource/MKL25Z128_flash.ld
     ''')) #Set linker flags to use.
     #    -nodefaultlibs
-    
+env.Append(LIBS = Split('''
+    libnosys
+    libc
+    libm
+    libgcc
+    '''))
 
-env.Append(LIBPATH = [Split('''
-    /home/bklippenstein/work/neon/freescale_arm
-    /home/bklippenstein/sat/arm-none-eabi/include
-    /home/bklippenstein/sat/arm-none-eabi/include/sys/
-    /home/bklippenstein/sat/lib/
-    /home/bklippenstein/sat/lib/gcc/arm-none-eabi/4.6.2/plugin/include/c
-    ''')])
+env.Append(LIBPATH = Split('''
+    ../../sat/arm-none-eabi/lib/thumb/cortex-m0/
+    ../../sat/lib/gcc/arm-none-eabi/4.7.3/thumb/cortex-m0
+    freescale_arm
+    ../../sat/arm-none-eabi/include
+    ../../sat/arm-none-eabi/include/sys/
+    ../../sat/lib/
+    ../../sat/lib/gcc/arm-none-eabi/4.6.2/plugin/include/c
+    '''))
+    #../../Freescale/MCU/ARM_GCC_Support/ewl/lib/armv6-m/
+    #../../Freescale/Cross_Tools/arm-none-eabi-gcc-4_6_2/lib/gcc/arm-none-eabi/4.6.2/armv6-m/
+    #../../sat/arm-none-eabi/lib/thumb/cortex-m0/
+    #objects
     
 ObjectList = env.StaticObject(source = SourceList) #Compile our source files into a buch of object file. Yet to be linked.
 

@@ -51,6 +51,7 @@
 #include "MCUinit.h"
 #include "interrupt.h"
 #include "board.h"
+#include "rtc.h"
 
 /* Interrupt vector table type definition */
 typedef void (*const tIsrFunc)(void);
@@ -299,6 +300,13 @@ PE_ISR(PORTA_ISR)
 	buttonPushed = 1;
 }
 
+PE_ISR(RTC_SECONDS_ISR)
+{
+	extern volatile uint8_t secondTicked;
+	secondTicked = 1;
+	interruptPendingClear(21);
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -353,7 +361,7 @@ __attribute__ ((section (".vectortable"))) const tVectorTable __vect_table = { /
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 34 (0x00000088) (prior: -) TPM1*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 35 (0x0000008C) (prior: -) TPM2*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 36 (0x00000090) (prior: -) RTC ALARM*/
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 37 (0x00000094) (prior: -) RTC SECONDS*/
+   (tIsrFunc)&RTC_SECONDS_ISR,                              /* 37 (0x00000094) (prior: -) RTC SECONDS*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 38 (0x00000098) (prior: -) Periodic Interrupt Timer*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 39 (0x0000009C) (prior: -) */
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 40 (0x000000A0) (prior: -) USB OTG*/

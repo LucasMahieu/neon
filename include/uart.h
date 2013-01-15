@@ -25,7 +25,13 @@ void uart0Disable(void);
 //Send byte to UART0, wait until complete.
 uint8_t uart0SendByte(uint8_t data);
 
-//Send multiple bytes to UART0, wait until complete.
-uint32_t uart0Send(uint8_t* data, uint8_t numBytes);
+//Send string and number of bytes to UART0, wait until complete.
+uint32_t uart0Send_s(uint8_t* data, uint8_t numBytes);
+
+//Send unsigned integer to UART0, wait until complete.
+uint32_t uart0Send_i(uint32_t data);
+
+//Send null terminated string to UART0
+uint32_t uart0Send_n(char* data);
 
 #endif /* UART_H_ */

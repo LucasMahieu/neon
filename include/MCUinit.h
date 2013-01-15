@@ -91,6 +91,7 @@ PE_ISR(isrINT_NMI);
 PE_ISR(PORTA_ISR);
 PE_ISR(systick);
 PE_ISR(llwu);
+PE_ISR(RTC_SECONDS_ISR);
 
 
 
