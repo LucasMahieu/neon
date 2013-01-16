@@ -15,3 +15,5 @@ As of commit e8550b91c4426df6f768f184df4f139696c52aef this project uses an SCons
 To build the project simply run ./scons/scons.py
 To clean the project simply run ./scons/scons.py -c
 
+Processor to be set up as I2C slave 0x84.
+
