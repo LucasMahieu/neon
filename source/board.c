@@ -38,9 +38,8 @@ void boardInit(void)
 
 	llwuConfigure();
 	vllsEnable();
-	//llsEnable();
-	vllsConfigure(3);
-	//llsConfigure();
+	vllsConfigure(1);
+
 
 	PMC_REGSC = 0x08;
 
@@ -55,7 +54,12 @@ void boardInit(void)
 	systickEnable();
 
 	rtcInit();
-	rtcSet((time_t)1358206730);
+
+	if(rtcGet() != 0)
+	{
+		rtcSet((time_t)1358206730);
+	}
+
 	rtcStart();
 
 	interruptSetPriority(21,0); // Configure RTC Seconds interrupt as highest priority.

@@ -33,12 +33,6 @@ int main(void)
 	extern volatile uint8_t systemTicked;
 
 	uint32_t ticks = 0;
-	uint8_t message[] = "System Boot\n";
-	uint32_t sentData = 0;
-
-	time_t now = 1357856413;
-
-	struct tm ts;
 
 	buttonPushed = 0;
 	systemTicked = 0;
@@ -48,25 +42,9 @@ int main(void)
 
 	boardInit(); // Initialize board specific features. -> board.c
 
-	sentData = uart0Send_s(message, 13);
+	uart0Send_n("System Boot\n\0");
 
-	//uart0Send_i(now);
-
-	ts = *localtime(&now);
-
-	uart0Send_n("Current Time:");
-	uart0Send_i(ts.tm_hour);
-	uart0Send_n(":\0");
-	uart0Send_i(ts.tm_min);
-	uart0Send_n(":\0");
-	uart0Send_i(ts.tm_sec);
-	uart0Send_n(" \0");
-	uart0Send_i(ts.tm_mday);
-	uart0Send_n("\\\0");
-	uart0Send_i(ts.tm_mon+1);
-	uart0Send_n("\\\0");
-	uart0Send_i(ts.tm_year+1900);
-	uart0Send_n("\n\0");
+	printTime();
 
 	while (1)
 	{
@@ -93,8 +71,7 @@ int main(void)
 		if(buttonPushed) // What to do if the button is pushed.
 		{
 			buttonPushed = 0;
-			//vllsEnter(); //Enter Very-Low-Leakage Stop Mode
-			printTime();
+			vllsEnter(); //Enter Very-Low-Leakage Stop Mode
 		}
 	}
 	//We should never get here.
