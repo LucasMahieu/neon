@@ -34,6 +34,10 @@ int main(void)
 
 	uint32_t ticks = 0;
 
+	struct tm test;
+
+	time_t etime = 0;
+
 	buttonPushed = 0;
 	systemTicked = 0;
 	secondTicked = 0;
@@ -43,6 +47,30 @@ int main(void)
 	boardInit(); // Initialize board specific features. -> board.c
 
 	uart0Send_n("System Boot\n\0");
+
+	test.tm_sec = 0;
+	test.tm_min = 0;
+	test.tm_hour = 0;
+	test.tm_mday = 1;
+	test.tm_mon = 0;
+	test.tm_year = 71;
+	test.tm_isdst = -1;
+
+	test.tm_sec = 45;
+	//test.tm_min = 35;
+	//test.tm_hour = 14;
+	//test.tm_mday = 18;
+	//test.tm_mon = 0;
+	//test.tm_year = 113;
+	//test.tm_isdst = -1;
+
+
+	rtcStop();
+	etime = mktime(&test);
+	uart0Send_i(etime);
+	uart0Send_n("\n\0");
+	rtcSet(etime);
+	rtcStart();
 
 	printTime();
 

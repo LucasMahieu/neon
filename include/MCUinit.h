@@ -92,6 +92,7 @@ PE_ISR(PORTA_ISR);
 PE_ISR(systick);
 PE_ISR(llwu);
 PE_ISR(RTC_SECONDS_ISR);
+PE_ISR(i2c);
 
 
 

@@ -10,9 +10,11 @@
 #include "time.h"
 #include "uart.h"
 
+volatile struct tm calTime;
 
 void rtcInit(void)
 {
+	extern volatile struct tm calTime;
 	SIM_SCGC6 |= (uint32_t)0x20000000; // Turn on the RTC.
 
 	//THe following actions configure port E0 to output a 1kHz signal based on the real-time clock.
@@ -23,6 +25,14 @@ void rtcInit(void)
 	SIM_SOPT2 |= (uint32_t)0x00000060; //
 
 	RTC_IER |= 0x00000010; //Enable an interrupt to fire every second for debugging.
+
+	calTime.tm_sec = 0;
+	calTime.tm_min = 0;
+	calTime.tm_hour = 0;
+	calTime.tm_mday = 0;
+	calTime.tm_mon = 0;
+	calTime.tm_year = 0;
+	calTime.tm_isdst = -1;
 
 }
 

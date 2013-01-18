@@ -12,6 +12,7 @@ SourceList = Split('''
     source/main.c
     source/newlibStubs.c
     source/rtc.c
+    source/i2c.c
     freescale_source/__arm_eabi_init.c
     freescale_source/gcc_ctor_dtor.c
     freescale_source/ROMCopy.c
@@ -46,11 +47,12 @@ env.Append(CCFLAGS = Split('''
     -mcpu=cortex-m0
     -mthumb
     -mfloat-abi=soft
-    -g3
     -gdwarf-2
+    -g3
     -gstrict-dwarf
     -Wno-unused-but-set-variable
     ''')) #Set compiler flags to use.
+    
     
 env.Append(CPPPATH = Split('''
     include

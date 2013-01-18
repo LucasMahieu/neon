@@ -11,4 +11,12 @@
 
 #include <cstdint>
 
+void i2cInit(void);
+
+uint8_t i2cGet(void);
+
+void i2cSend(uint8_t data);
+
+void i2cAck(uint8_t ack);
+
 #endif /* I2C_C_ */

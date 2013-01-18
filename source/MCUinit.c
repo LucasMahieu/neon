@@ -52,6 +52,9 @@
 #include "interrupt.h"
 #include "board.h"
 #include "rtc.h"
+#include "i2c.h"
+#include "uart.h"
+#include "time.h"
 
 /* Interrupt vector table type definition */
 typedef void (*const tIsrFunc)(void);
@@ -232,7 +235,7 @@ PE_ISR(llwu)
 //	__init_hardware(); //Rerun all init functions upon wake-up.
 	MCU_init();
 	boardInit();
-	extern uint32_t DUMMYREAD;
+	extern volatile uint32_t DUMMYREAD;
 
 	SIM_SCGC5 |= 0x00000400; //enable Port B clock
 	PORTB_PCR0 |= (uint32_t)0x00000102; //Configure portB0 as GPIO with pullup.
@@ -263,6 +266,138 @@ PE_ISR(RTC_SECONDS_ISR)
 	extern volatile uint8_t secondTicked;
 	secondTicked = 1;
 	interruptPendingClear(21);
+}
+
+PE_ISR(i2c)
+{
+	extern volatile uint32_t DUMMYREAD;
+	extern uint8_t i2cData;
+	extern uint8_t i2cState;
+	extern uint8_t i2cRegister;
+	extern volatile struct tm calTime;
+
+	I2C1_S |= 0x02; // clear interrupt flag in I2C register.
+	uart0Send_n("Entered ISR\n\0");
+
+	if(I2C1_S & 0x10)
+	{
+		//Arbitration lost.
+		I2C1_S |= 0x10;
+		uart0Send_n("Lost Arbitration\n\0");
+
+		if(!(I2C1_S & 0x40))
+		{
+			return;
+		}
+
+	}
+
+	if(I2C1_S & 0x40)// Address Transfer
+	{
+		uart0Send_n("received address\n\0");
+		uart0Send_n("State is :\0");
+		uart0Send_i(i2cState);
+		uart0Send_n("\n\0");
+
+		if(I2C1_S & 0x04)// SRW = 1
+		{
+			I2C1_C1 |= 0x10; // Set to transmit
+			I2C1_D = i2cData; //Write appropriate byte out
+		}
+		else
+		{
+			I2C1_C1 &= ~0x10; // Set to receive
+			DUMMYREAD = I2C1_D; // We received our own address, throw it away.
+			if(i2cState == 0)
+			{
+				uart0Send_n("moving to state 1\n\0");
+				i2cState = 1; // Move into state 1.
+				interruptPendingClear(25);
+				uart0Send_n("Leaving ISR\n\0");
+				i2cAck(1);
+				return;
+			}
+			else if(i2cState == 2)
+			{
+				uart0Send_n("moving to state 3\n\0");
+				i2cState = 3; // Move into state 3.
+				interruptPendingClear(25);
+				uart0Send_n("Leaving ISR\n\0");
+				i2cAck(1);
+				return;
+			}
+		}
+	}
+	else // Data Transfer
+	{
+		//uart0Send_n("Received Data\n\0");
+		if(I2C1_C1 & 0x10)//Module set to transmit.
+		{
+			//uart0Send_n("Setting to receive\n\0");
+			I2C1_C1 &= ~0x10; // Set to receive
+			DUMMYREAD = I2C1_D; // Do a dummy read.
+			i2cAck(1);
+		}
+
+		else
+		{
+			if(i2cState == 1) // If we're in state 1
+			{
+				//uart0Send_n("Moving from state 1 to state 2\n\0");
+				i2cRegister = I2C1_D; // Read register
+				i2cState = 2; // Set our state to 2
+				i2cAck(1);
+			}
+
+			else if(i2cState == 3) //if we're in state 2
+			{
+				i2cData = I2C1_D;
+				switch (i2cRegister)
+				{
+					case 0:
+						calTime.tm_sec = i2cData; // received seconds
+						//uart0Send_n("received seconds\n\0");
+						break;
+
+					case 1:
+						calTime.tm_min = i2cData; // received minutes
+						//uart0Send_n("received minutes\n\0");
+						break;
+
+					case 2:
+						calTime.tm_hour = i2cData; // received hours
+						//uart0Send_n("received hours\n\0");
+						break;
+
+					case 3:
+						calTime.tm_mday = i2cData; // received day of month
+						//uart0Send_n("received days\n\0");
+						break;
+
+					case 4:
+						calTime.tm_mon = i2cData; // received month
+						//uart0Send_n("received month\n\0");
+						//TODO: make sure this is properly indexed.
+						break;
+
+					case 5:
+						calTime.tm_year = i2cData+70; // received years since 1970
+						//uart0Send_n("received year\n\0");
+						break;
+				}
+				//uart0Send_n("moving from state 3 to state 0\n\0");
+				i2cAck(1);
+				i2cState = 0; // move back to state 0
+				rtcStop();
+				rtcSet(mktime((struct tm*)&calTime));
+				rtcStart();
+				printTime();
+			}
+
+		}
+	}
+
+	interruptPendingClear(25);
 }
 
 #ifdef __cplusplus
@@ -307,7 +442,7 @@ __attribute__ ((section (".vectortable"))) const tVectorTable __vect_table = { /
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 22 (0x00000058) (prior: -) PMC*/
    (tIsrFunc)&llwu,                                        /* 23 (0x0000005C) (prior: -) LLWU*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 24 (0x00000060) (prior: -) I2C0*/
-   (tIsrFunc)&UNASSIGNED_ISR,                              /* 25 (0x00000064) (prior: -) I2C1*/
+   (tIsrFunc)&i2c,                              /* 25 (0x00000064) (prior: -) I2C1*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 26 (0x00000068) (prior: -) SPI0*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 27 (0x0000006C) (prior: -) SPI1*/
    (tIsrFunc)&UNASSIGNED_ISR,                              /* 28 (0x00000070) (prior: -) UART0*/

@@ -17,6 +17,7 @@
 #include "uart.h"
 #include "rtc.h"
 #include "time.h"
+#include "i2c.h"
 
 void boardInit(void)
 {
@@ -40,12 +41,11 @@ void boardInit(void)
 	vllsEnable();
 	vllsConfigure(1);
 
-
 	PMC_REGSC = 0x08;
 
 	systickConfigure();
 
-	interruptSetPriority(30,3);
+	interruptSetPriority(30,0); //Port A ISR
 	interruptEnable(30);
 
 	interruptSetPriority(7,0); // Configure LLWU interrupt as highest priority.
@@ -55,14 +55,13 @@ void boardInit(void)
 
 	rtcInit();
 
-	if(rtcGet() != 0)
-	{
-		rtcSet((time_t)1358206730);
-	}
-
 	rtcStart();
 
-	interruptSetPriority(21,0); // Configure RTC Seconds interrupt as highest priority.
-	interruptEnable(21); //Enable RTC Seconds interrupt.
+	//interruptSetPriority(21,0); // Configure RTC Seconds interrupt as highest priority.
+	//interruptEnable(21); //Enable RTC Seconds interrupt.
+
+	i2cInit();
+	interruptSetPriority(9,3); // Configure I2C interrupt as Lowest priority.
+	interruptEnable(9); //Enable I2C interrupt.
 
 }
