@@ -7,7 +7,7 @@
 #define wint_t uint8_t //Define this to make some of the standard libraries work.
 
 #include "derivative.h" /* include peripheral declarations */
-#include "MKL25Z4.h" //inlude register definitions
+#include "MKL25Z4.h" //include register definitions
 #include "interrupt.h"
 #include "power.h"
 #include "systick.h"
@@ -69,7 +69,6 @@ int main(void)
 		if(buttonPushed) // What to do if the button is pushed.
 		{
 			buttonPushed = 0;
-			//secondTicked = 1;
 			PORTC_PCR10 = 0x00000100; //Set PortC10 to GPIO
 			PORTC_PCR11 = 0x00000100; //Set PortC11 to GPIO
 			FGPIOC_PDDR |= 0x00000C00; //Set PortC10, PortC11 to HiZ

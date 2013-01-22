@@ -297,10 +297,6 @@ PE_ISR(i2c)
 
 	if(I2C1_S & 0x40)// Address Transfer
 	{
-		//uart0Send_n("State is :\0");
-		//uart0Send_i(i2cState);
-		//uart0Send_n("\n\0");
-
 		if(I2C1_S & 0x04)// SRW = 1 -> data requested
 		{
 			I2C1_C1 |= 0x10; // Set to transmit
@@ -331,7 +327,6 @@ PE_ISR(i2c)
 
 				case 4:
 					i2cData = (calTime.tm_mon + 1); // received month request
-					//TODO: make sure this is properly indexed.
 					break;
 
 				case 5:
@@ -343,11 +338,6 @@ PE_ISR(i2c)
 					break;
 			}
 
-			//uart0Send_n("sending register: \0");
-			//uart0Send_i(i2cRegister);
-			//uart0Send_n(" data: \0");
-			//uart0Send_i(i2cData);
-			//uart0Send_n("\n\0");
 			i2cState =  0;
 			I2C1_D = i2cData; //Write appropriate byte out
 		}
@@ -357,7 +347,6 @@ PE_ISR(i2c)
 			DUMMYREAD = I2C1_D; // We received our own address, throw it away.
 			if(i2cState == 0)
 			{
-				//uart0Send_n("moving to state 1\n\0");
 				i2cState = 1; // Move into state 1.
 				interruptPendingClear(25);
 				i2cAck(1);
@@ -366,7 +355,6 @@ PE_ISR(i2c)
 			}
 			else if(i2cState == 2)
 			{
-				//uart0Send_n("moving to state 3\n\0");
 				i2cState = 3; // Move into state 3.
 				interruptPendingClear(25);
 				i2cAck(1);
@@ -377,10 +365,8 @@ PE_ISR(i2c)
 	}
 	else // Data Transfer
 	{
-		//uart0Send_n("Received Data\n\0");
 		if(I2C1_C1 & 0x10)//Module set to transmit.
 		{
-			//uart0Send_n("Setting to receive\n\0");
 			I2C1_C1 &= ~0x10; // Set to receive
 			DUMMYREAD = I2C1_D; // Do a dummy read.
 			i2cAck(1);
@@ -392,15 +378,8 @@ PE_ISR(i2c)
 			{
 				i2cRegister = I2C1_D; // Read register
 
-				//uart0Send_n("register: \0");
-				//uart0Send_i(i2cRegister);
-				//uart0Send_n("\n\0");
-
 				i2cState = 2; // Set our state to 2
 
-				//uart0Send_n("state: \0");
-				//uart0Send_i(i2cState);
-				//uart0Send_n("\n\0");
 				i2cAck(1);
 			}
 
@@ -411,48 +390,34 @@ PE_ISR(i2c)
 				{
 					case 0:
 						calTime.tm_sec = i2cData; // received seconds
-						//uart0Send_n("received seconds\n\0");
 						break;
 
 					case 1:
 						calTime.tm_min = i2cData; // received minutes
-						//uart0Send_n("received minutes\n\0");
 						break;
 
 					case 2:
 						calTime.tm_hour = i2cData; // received hours
-						//uart0Send_n("received hours\n\0");
 						break;
 
 					case 3:
 						calTime.tm_mday = i2cData; // received day of month
-						//uart0Send_n("received days\n\0");
 						break;
 
 					case 4:
 						calTime.tm_mon = (i2cData-1); // received month
-						//uart0Send_n("received month\n\0");
-						//TODO: make sure this is properly indexed.
 						break;
 
 					case 5:
 						calTime.tm_year = (i2cData+70); // received years since 1970. Store as years since 1900
-						//uart0Send_n("received year\n\0");
 						break;
 				}
-
-				//uart0Send_n("Receiving register \0");
-				//uart0Send_i(i2cRegister);
-				//uart0Send_n(": data: \0");
-				//uart0Send_i(i2cData);
-				//uart0Send_n("\n\0");
 
 				i2cAck(1);
 				i2cState = 0; // move back to state 0
 				rtcStop();
 				rtcSet(mktime((struct tm*)&calTime));
 				rtcStart();
-				//printTime();
 			}
 
 		}

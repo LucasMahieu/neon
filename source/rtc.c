@@ -33,10 +33,6 @@ void rtcInit(void)
 	calTime.tm_mon = 0;
 	calTime.tm_year = 113;
 	calTime.tm_isdst = -1;
-
-	//rtcStop();
-	//rtcSet(mktime((struct tm*)&calTime));
-	//rtcStart();
 }
 
 void rtcSet(time_t unixTime)
