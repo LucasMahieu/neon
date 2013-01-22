@@ -23,6 +23,7 @@ void boardInit(void)
 {
 	SIM_SCGC5 |= 0x00000400; //enable Port B clock
 	SIM_SCGC5 |= 0x00000200; //enable Port A clock
+	SIM_SCGC5 |= 0x00001000; //enable Port D clock
 
 	PORTB_PCR19 |= (uint32_t)0x00000100; //Configure portB19 as GPIO (GREEN)
 	GPIOB_PDDR |= (uint32_t)0x00080000; //Configure portB19 as output
@@ -33,6 +34,10 @@ void boardInit(void)
 	PORTB_PCR18 |= (uint32_t)0x00000100; //Configure portB18 as GPIO (RED)
 	GPIOB_PSOR |= (uint32_t)0x00040000;
 	GPIOB_PDDR |= (uint32_t)0x00040000; //Configure portB18 as output
+
+	PORTD_PCR1 |= (uint32_t)0x00000100; //Configure portD1 as GPIO (BLUE)
+	FGPIOD_PSOR |= (uint32_t)0x00000002;
+	FGPIOD_PDDR |= (uint32_t)0x00000002; //Configure portD1 as output
 
 	uart0Config();
 	uart0Enable();
@@ -54,11 +59,10 @@ void boardInit(void)
 	systickEnable();
 
 	rtcInit();
-
 	rtcStart();
 
-	//interruptSetPriority(21,0); // Configure RTC Seconds interrupt as highest priority.
-	//interruptEnable(21); //Enable RTC Seconds interrupt.
+	interruptSetPriority(21,0); // Configure RTC Seconds interrupt as highest priority.
+	interruptEnable(21); //Enable RTC Seconds interrupt.
 
 	i2cInit();
 	interruptSetPriority(9,3); // Configure I2C interrupt as Lowest priority.

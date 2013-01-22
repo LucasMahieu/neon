@@ -44,32 +44,6 @@ int main(void)
 
 	uart0Send_n("System Boot\n\0");
 
-	/*test.tm_sec = 0;
-	test.tm_min = 0;
-	test.tm_hour = 0;
-	test.tm_mday = 1;
-	test.tm_mon = 0;
-	test.tm_year = 71;
-	test.tm_isdst = -1;
-
-	test.tm_sec = 45;*/
-	//test.tm_min = 35;
-	//test.tm_hour = 14;
-	//test.tm_mday = 18;
-	//test.tm_mon = 0;
-	//test.tm_year = 113;
-	//test.tm_isdst = -1;
-
-
-	/*rtcStop();
-	etime = mktime(&test);
-	uart0Send_i(etime);
-	uart0Send_n("\n\0");
-	rtcSet(etime);
-	rtcStart();*/
-
-	//printTime();
-
 	while (1)
 	{
 		i = GPIOB_PDIR;
@@ -95,8 +69,12 @@ int main(void)
 		if(buttonPushed) // What to do if the button is pushed.
 		{
 			buttonPushed = 0;
-			secondTicked = 1;
-			//vllsEnter(); //Enter Very-Low-Leakage Stop Mode
+			//secondTicked = 1;
+			PORTC_PCR10 = 0x00000100; //Set PortC10 to GPIO
+			PORTC_PCR11 = 0x00000100; //Set PortC11 to GPIO
+			FGPIOC_PDDR |= 0x00000C00; //Set PortC10, PortC11 to HiZ
+			FGPIOC_PCOR |= 0x00000C00; //Set PortC10, PortC11 to HiZ
+			vllsEnter(); //Enter Very-Low-Leakage Stop Mode
 		}
 	}
 	//We should never get here.

@@ -27,13 +27,16 @@ void rtcInit(void)
 	RTC_IER |= 0x00000010; //Enable an interrupt to fire every second for debugging.
 
 	calTime.tm_sec = 0;
-	calTime.tm_min = 0;
-	calTime.tm_hour = 0;
-	calTime.tm_mday = 0;
+	calTime.tm_min = 35;
+	calTime.tm_hour = 11;
+	calTime.tm_mday = 22;
 	calTime.tm_mon = 0;
-	calTime.tm_year = 70;
+	calTime.tm_year = 113;
 	calTime.tm_isdst = -1;
 
+	//rtcStop();
+	//rtcSet(mktime((struct tm*)&calTime));
+	//rtcStart();
 }
 
 void rtcSet(time_t unixTime)
@@ -43,7 +46,7 @@ void rtcSet(time_t unixTime)
 
 time_t rtcGet(void)
 {
-	time_t now;
+	time_t now = 0;
 	now = RTC_TSR;
 	return(now);
 }
