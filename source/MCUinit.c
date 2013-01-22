@@ -275,9 +275,9 @@ PE_ISR(i2c)
 	extern uint8_t i2cState;
 	extern uint8_t i2cRegister;
 	extern volatile struct tm calTime;
+	time_t currentTime;
 
 	I2C1_S |= 0x02; // clear interrupt flag in I2C register.
-	uart0Send_n("Entered ISR\n\0");
 
 	if(I2C1_S & 0x10)
 	{
@@ -289,19 +289,66 @@ PE_ISR(i2c)
 		{
 			return;
 		}
-
 	}
 
 	if(I2C1_S & 0x40)// Address Transfer
 	{
-		uart0Send_n("received address\n\0");
 		uart0Send_n("State is :\0");
 		uart0Send_i(i2cState);
 		uart0Send_n("\n\0");
 
-		if(I2C1_S & 0x04)// SRW = 1
+		if(I2C1_S & 0x04)// SRW = 1 -> data requested
 		{
 			I2C1_C1 |= 0x10; // Set to transmit
+			DUMMYREAD = I2C1_D;
+
+			currentTime = rtcGet();
+			calTime = *localtime(&currentTime);
+
+			switch (i2cRegister)
+			{
+				case 0:
+					i2cData = calTime.tm_sec; // received seconds
+					//uart0Send_n("received seconds\n\0");
+					break;
+
+				case 1:
+					i2cData = calTime.tm_min; // received minutes
+					//uart0Send_n("received minutes\n\0");
+					break;
+
+				case 2:
+					i2cData = calTime.tm_hour; // received hours
+					//uart0Send_n("received hours\n\0");
+					break;
+
+				case 3:
+					i2cData = calTime.tm_mday; // received day of month
+					//uart0Send_n("received days\n\0");
+					break;
+
+				case 4:
+					i2cData = calTime.tm_mon; // received month
+					//uart0Send_n("received month\n\0");
+					//TODO: make sure this is properly indexed.
+					break;
+
+				case 5:
+					i2cData = calTime.tm_year; // received years since 1970
+					//uart0Send_n("received year\n\0");
+					break;
+
+				default:
+					i2cData = 0;
+					break;
+			}
+
+			uart0Send_n("sending register: \0");
+			uart0Send_i(i2cRegister);
+			uart0Send_n(" data: \0");
+			uart0Send_i(i2cData);
+			uart0Send_n("\n\0");
+
 			I2C1_D = i2cData; //Write appropriate byte out
 		}
 		else
@@ -313,7 +360,6 @@ PE_ISR(i2c)
 				uart0Send_n("moving to state 1\n\0");
 				i2cState = 1; // Move into state 1.
 				interruptPendingClear(25);
-				uart0Send_n("Leaving ISR\n\0");
 				i2cAck(1);
 				return;
 			}
@@ -322,7 +368,6 @@ PE_ISR(i2c)
 				uart0Send_n("moving to state 3\n\0");
 				i2cState = 3; // Move into state 3.
 				interruptPendingClear(25);
-				uart0Send_n("Leaving ISR\n\0");
 				i2cAck(1);
 				return;
 			}
@@ -343,9 +388,17 @@ PE_ISR(i2c)
 		{
 			if(i2cState == 1) // If we're in state 1
 			{
-				//uart0Send_n("Moving from state 1 to state 2\n\0");
 				i2cRegister = I2C1_D; // Read register
+
+				uart0Send_n("register: \0");
+				uart0Send_i(i2cRegister);
+				uart0Send_n("\n\0");
+
 				i2cState = 2; // Set our state to 2
+
+				uart0Send_n("state: \0");
+				uart0Send_i(i2cState);
+				uart0Send_n("\n\0");
 				i2cAck(1);
 			}
 
@@ -385,7 +438,13 @@ PE_ISR(i2c)
 						//uart0Send_n("received year\n\0");
 						break;
 				}
-				//uart0Send_n("moving from state 3 to state 0\n\0");
+
+				uart0Send_n("Receiving register \0");
+				uart0Send_i(i2cRegister);
+				uart0Send_n(": data: \0");
+				uart0Send_i(i2cData);
+				uart0Send_n("\n\0");
+
 				i2cAck(1);
 				i2cState = 0; // move back to state 0
 				rtcStop();

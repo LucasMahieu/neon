@@ -34,10 +34,6 @@ int main(void)
 
 	uint32_t ticks = 0;
 
-	struct tm test;
-
-	time_t etime = 0;
-
 	buttonPushed = 0;
 	systemTicked = 0;
 	secondTicked = 0;
@@ -48,7 +44,7 @@ int main(void)
 
 	uart0Send_n("System Boot\n\0");
 
-	test.tm_sec = 0;
+	/*test.tm_sec = 0;
 	test.tm_min = 0;
 	test.tm_hour = 0;
 	test.tm_mday = 1;
@@ -56,7 +52,7 @@ int main(void)
 	test.tm_year = 71;
 	test.tm_isdst = -1;
 
-	test.tm_sec = 45;
+	test.tm_sec = 45;*/
 	//test.tm_min = 35;
 	//test.tm_hour = 14;
 	//test.tm_mday = 18;
@@ -65,14 +61,14 @@ int main(void)
 	//test.tm_isdst = -1;
 
 
-	rtcStop();
+	/*rtcStop();
 	etime = mktime(&test);
 	uart0Send_i(etime);
 	uart0Send_n("\n\0");
 	rtcSet(etime);
-	rtcStart();
+	rtcStart();*/
 
-	printTime();
+	//printTime();
 
 	while (1)
 	{
@@ -99,7 +95,8 @@ int main(void)
 		if(buttonPushed) // What to do if the button is pushed.
 		{
 			buttonPushed = 0;
-			vllsEnter(); //Enter Very-Low-Leakage Stop Mode
+			secondTicked = 1;
+			//vllsEnter(); //Enter Very-Low-Leakage Stop Mode
 		}
 	}
 	//We should never get here.

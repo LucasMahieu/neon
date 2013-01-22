@@ -31,7 +31,7 @@ void rtcInit(void)
 	calTime.tm_hour = 0;
 	calTime.tm_mday = 0;
 	calTime.tm_mon = 0;
-	calTime.tm_year = 0;
+	calTime.tm_year = 70;
 	calTime.tm_isdst = -1;
 
 }
