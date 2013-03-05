@@ -1,5 +1,5 @@
 /* CodeWarrior Runtime Libraries
- * Copyright ©2012 Freescale Semiconductor, Inc.  All rights reserved.
+ * Copyright ï¿½2012 Freescale Semiconductor, Inc.  All rights reserved.
  *
  */
  
@@ -23,39 +23,39 @@ typedef void (*voidfunctionptr) (void);
 
 extern void __init_cpp(void)
 {
-	 voidfunctionptr* constructor;
+     voidfunctionptr* constructor;
 
-	/*
-	 *	call static initializers
-	 */
-	for (constructor = __CTOR_LIST__; constructor != __CTOR_END__; constructor++) {
-		(*constructor)();
-	}
-	
-	for (constructor = __preinit_array_start; constructor != __preinit_array_end; constructor++) {
-		(*constructor)();
-	}
+    /*
+     *    call static initializers
+     */
+    for (constructor = __CTOR_LIST__; constructor != __CTOR_END__; constructor++) {
+        (*constructor)();
+    }
+    
+    for (constructor = __preinit_array_start; constructor != __preinit_array_end; constructor++) {
+        (*constructor)();
+    }
 
-	for (constructor = __init_array_start; constructor != __init_array_end; constructor++) {
-		(*constructor)();
-	}
+    for (constructor = __init_array_start; constructor != __init_array_end; constructor++) {
+        (*constructor)();
+    }
 
 }
 
 extern void __fini_cpp(void)
 {
-	 voidfunctionptr* destructor;
+     voidfunctionptr* destructor;
 
-	/*
-	 *	call destructors
-	 */
-	for (destructor = __DTOR_LIST__; destructor != __DTOR_END__; destructor++) {
-		(*destructor)();
-	}
-	
-	for (destructor = __fini_array_end; destructor != __fini_array_start; --destructor) {
-		(*(destructor-1))();
-	}
-	
+    /*
+     *    call destructors
+     */
+    for (destructor = __DTOR_LIST__; destructor != __DTOR_END__; destructor++) {
+        (*destructor)();
+    }
+    
+    for (destructor = __fini_array_end; destructor != __fini_array_start; --destructor) {
+        (*(destructor-1))();
+    }
+    
 }
 

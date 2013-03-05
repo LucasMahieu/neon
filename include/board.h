@@ -3,9 +3,9 @@
  *
  *  Created on: 2013-01-03
  *      Author: Bryce Klippenstein
- *				Carmanah Signs inc.
+ *                Carmanah Signs inc.
  *
- *	Contains functions relevant to the specific hardware implementation.
+ *    Contains functions relevant to the specific hardware implementation.
  */
 
 #ifndef BOARD_H_

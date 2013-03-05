@@ -23,60 +23,63 @@ volatile uint32_t buttonPushed;
 volatile uint8_t systemTicked;
 volatile uint8_t secondTicked;
 volatile uint32_t DUMMYREAD;
+volatile uint8_t PIT_tick;
 
 void MCU_init(void); /* Device initialization function declaration */
 
 int main(void)
 {
-	volatile int i = 0;
-	extern volatile uint32_t buttonPushed;
-	extern volatile uint8_t systemTicked;
+    volatile int i = 0;
+    extern volatile uint32_t buttonPushed;
+    extern volatile uint8_t systemTicked;
 
-	uint32_t ticks = 0;
+    uint32_t ticks = 0; // container to record the number of system ticks
 
-	buttonPushed = 0;
-	systemTicked = 0;
-	secondTicked = 0;
-	
-	MCU_init(); /* call device initialization */
+    buttonPushed = 0;
+    systemTicked = 0;
+    secondTicked = 0;
 
-	boardInit(); // Initialize board specific features. -> board.c
+    MCU_init(); /* call device initialization */
 
-	uart0Send_n("System Boot\n\0");
+    boardInit(); // Initialize board specific features. -> board.c
 
-	while (1)
-	{
-		i = GPIOB_PDIR;
+    uart0Send_n("System Boot\n\0");
 
-		if(systemTicked == 1)
-		{
-			systemTicked = 0;
-			ticks++;
-		}
+    dm365_powerup();
 
-		if(ticks >= 500)
-		{
-			ticks = 0;
-			GPIOB_PTOR = (uint32_t)0x00080000; //toggle output of portB19
-		}
+    while (1)
+    {
+        i = GPIOB_PDIR;
 
-		if(secondTicked)
-		{
-			printTime();
-			secondTicked = 0;
-		}
+        if(systemTicked == 1)
+        {
+            systemTicked = 0;
+            ticks++;
+        }
 
-		if(buttonPushed) // What to do if the button is pushed.
-		{
-			buttonPushed = 0;
-			PORTC_PCR10 = 0x00000100; //Set PortC10 to GPIO
-			PORTC_PCR11 = 0x00000100; //Set PortC11 to GPIO
-			FGPIOC_PDDR |= 0x00000C00; //Set PortC10, PortC11 to HiZ
-			FGPIOC_PCOR |= 0x00000C00; //Set PortC10, PortC11 to HiZ
-			vllsEnter(); //Enter Very-Low-Leakage Stop Mode
-		}
-	}
-	//We should never get here.
+        if(ticks >= 500)
+        {
+            ticks = 0;
+            GPIOB_PTOR = (uint32_t)0x00080000; //toggle output of portB19
+        }
 
-	return 0;
+        /*if(secondTicked)
+        {
+            printTime();
+            secondTicked = 0;
+        }*/
+
+        if(buttonPushed) // What to do if the button is pushed.
+        {
+            buttonPushed = 0;
+            PORTC_PCR10 = 0x00000100; //Set PortC10 to GPIO
+            PORTC_PCR11 = 0x00000100; //Set PortC11 to GPIO
+            FGPIOC_PDDR |= 0x00000C00; //Set PortC10, PortC11 to HiZ
+            FGPIOC_PCOR |= 0x00000C00; //Set PortC10, PortC11 to HiZ
+            vllsEnter(); //Enter Very-Low-Leakage Stop Mode
+        }
+    }
+    //We should never get here.
+
+    return 0;
 }

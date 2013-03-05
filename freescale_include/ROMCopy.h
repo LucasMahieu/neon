@@ -1,7 +1,7 @@
 /*
- *	ROMCopy.h		-	Routine to copy from ROM to RAM.
+ *    ROMCopy.h        -    Routine to copy from ROM to RAM.
  *
- *	Copyright 2004 Metrowerks, Inc. All Rights Reserved.
+ *    Copyright 2004 Metrowerks, Inc. All Rights Reserved.
  *
  *  Author: Jan Kobler, jkobler@metrowerks.com
  *  Created: 2003.09.19
@@ -15,9 +15,9 @@
 
 /* format of the ROM table info entry ... */
 typedef struct RomInfo {
-	unsigned long	Source;
-	unsigned long	Target;
-	unsigned long 	Size;
+    unsigned long    Source;
+    unsigned long    Target;
+    unsigned long     Size;
 } RomInfo;
 
 

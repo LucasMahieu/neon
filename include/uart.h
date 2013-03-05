@@ -3,7 +3,7 @@
  *
  *  Created on: 2013-01-08
  *      Author: Bryce Klippenstein
- *				Carmanah Signs inc.
+ *                Carmanah Signs inc.
  */
 
 #ifndef UART_H_

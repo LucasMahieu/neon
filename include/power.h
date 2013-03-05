@@ -3,7 +3,7 @@
  *
  *  Created on: 2013-01-02
  *      Author: Bryce Klippenstein
- *				Carmanah Signs inc.
+ *                Carmanah Signs inc.
  */
 
 #ifndef POWER_H_

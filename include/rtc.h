@@ -3,7 +3,7 @@
  *
  *  Created on: 2013-01-01
  *      Author: Bryce Klippenstein
- *				Carmanah Signs inc.
+ *                Carmanah Signs inc.
  */
 
 #ifndef RTC_H_

@@ -3,9 +3,9 @@
  *
  *  Created on: 2013-01-03
  *      Author: Bryce Klippenstein
- *				Carmanah Signs inc.
+ *                Carmanah Signs inc.
  *
- *	Contains functions relevant to the specific hardware implementation.
+ *    Contains functions relevant to the specific hardware implementation.
  */
 
 #include "MKL25Z4.h"
@@ -21,48 +21,48 @@
 
 void boardInit(void)
 {
-	SIM_SCGC5 |= 0x00000400; //enable Port B clock
-	SIM_SCGC5 |= 0x00000200; //enable Port A clock
-	SIM_SCGC5 |= 0x00001000; //enable Port D clock
+    SIM_SCGC5 |= 0x00000400; //enable Port B clock
+    SIM_SCGC5 |= 0x00000200; //enable Port A clock
+    SIM_SCGC5 |= 0x00001000; //enable Port D clock
 
-	PORTB_PCR19 |= (uint32_t)0x00000100; //Configure portB19 as GPIO (GREEN)
-	GPIOB_PDDR |= (uint32_t)0x00080000; //Configure portB19 as output
+    PORTB_PCR19 |= (uint32_t)0x00000100; //Configure portB19 as GPIO (GREEN)
+    GPIOB_PDDR |= (uint32_t)0x00080000; //Configure portB19 as output
 
-	PORTA_PCR12 |= (uint32_t)0x000A0102; //Configure portA12 as GPIO with falling edge interrupt and pullup enabled.
-	GPIOA_PDDR &= ~(uint32_t)(1<<12); //Configure portA12 as input.
+    PORTA_PCR12 |= (uint32_t)0x000A0102; //Configure portA12 as GPIO with falling edge interrupt and pullup enabled.
+    GPIOA_PDDR &= ~(uint32_t)(1<<12); //Configure portA12 as input.
 
-	PORTB_PCR18 |= (uint32_t)0x00000100; //Configure portB18 as GPIO (RED)
-	GPIOB_PSOR |= (uint32_t)0x00040000;
-	GPIOB_PDDR |= (uint32_t)0x00040000; //Configure portB18 as output
+    PORTB_PCR18 |= (uint32_t)0x00000100; //Configure portB18 as GPIO (RED)
+    GPIOB_PSOR |= (uint32_t)0x00040000;
+    GPIOB_PDDR |= (uint32_t)0x00040000; //Configure portB18 as output
 
-	PORTD_PCR1 |= (uint32_t)0x00000100; //Configure portD1 as GPIO (BLUE)
-	FGPIOD_PSOR |= (uint32_t)0x00000002;
-	FGPIOD_PDDR |= (uint32_t)0x00000002; //Configure portD1 as output
+    PORTD_PCR1 |= (uint32_t)0x00000100; //Configure portD1 as GPIO (BLUE)
+    FGPIOD_PSOR |= (uint32_t)0x00000002;
+    FGPIOD_PDDR |= (uint32_t)0x00000002; //Configure portD1 as output
 
-	uart0Config();
-	uart0Enable();
+    //SIM_SCGC6 |= (uint8_t) 0x00800000; // Enable PIT clock
 
     SIM_SOPT2 |= 0x01000000; // Set TPM to use the MCGFLLCLK as a clock source
     // MCGFLLCLK is either 24MHz or 23 986 176Hz
     SIM_SCGC6 |= 0x01000000; // Enable TPM0 clock
 
-	PMC_REGSC = 0x08;
+    uart0Config();
+    uart0Enable();
 
-	systickConfigure();
+    llwuConfigure();
+    vllsEnable();
+    vllsConfigure(1);
 
-	interruptSetPriority(30,0); //Port A ISR
-	interruptEnable(30);
+    PMC_REGSC = 0x08;
 
-	interruptSetPriority(7,0); // Configure LLWU interrupt as highest priority.
-	interruptEnable(7); //Enable LLWU interrupt.
+    systickConfigure();
 
-	systickEnable();
+    interruptSetPriority(30,0); //Port A ISR
+    interruptEnable(30);
 
-	rtcInit();
-	rtcStart();
+    interruptSetPriority(7,0); // Configure LLWU interrupt as highest priority.
+    interruptEnable(7); //Enable LLWU interrupt.
 
-	interruptSetPriority(21,0); // Configure RTC Seconds interrupt as highest priority.
-	interruptEnable(21); //Enable RTC Seconds interrupt.
+    systickEnable();
 
     rtcInit();
     rtcStart();

@@ -3,7 +3,7 @@
  *
  *  Created on: 2013-01-16
  *      Author: Bryce Klippenstein
- *				Carmanah Signs inc.
+ *                Carmanah Signs inc.
  */
 
 #ifndef I2C_C_
