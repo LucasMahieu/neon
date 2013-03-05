@@ -32,4 +32,11 @@ void llsEnter(void);
 //Configure LLWU_P5 (portB0) as a wake-up trigger
 void llwuConfigure(void);
 
+/* Idle for ms milliseconds.
+ *
+ * This is a blocking function, it won't return
+ * until the wait time is complete.
+ */
+void wait(uint8_t ms);
+
 #endif

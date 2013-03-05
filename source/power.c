@@ -66,12 +66,32 @@ void llsEnter(void)
 
 void llwuConfigure(void)
 {
-	//uint32_t* llwu_pe2 = (uint32_t*)0x4007C000;
-	SIM_SCGC5 |= 0x00000400; //enable Port B clock
-	PORTB_PCR0 |= (uint32_t)0x00000102; //Configure portB0 as GPIO with pullup.
-	GPIOB_PDDR &= ~(uint32_t)0x00000001; //Configure portB0 as input.
+    //uint32_t* llwu_pe2 = (uint32_t*)0x4007C000;
+    SIM_SCGC5 |= 0x00000400; //enable Port B clock
+    PORTB_PCR0 |= (uint32_t)0x00000102; //Configure portB0 as GPIO with pullup.
+    GPIOB_PDDR &= ~(uint32_t)0x00000001; //Configure portB0 as input.
 
-	LLWU_PE2 |= (uint8_t)0x0C; // Write 10b to WUPE5 bitfield. Configure PortB0 to trigger wake-up on falling edge.
-	LLWU_FILT1 |= (uint8_t)0x65; //Configure LLWU_P5 to be filtered on both edges.
+    LLWU_PE2 |= (uint8_t)0x0C; // Write 10b to WUPE5 bitfield. Configure PortB0 to trigger wake-up on falling edge.
+    LLWU_FILT1 |= (uint8_t)0x65; //Configure LLWU_P5 to be filtered on both edges.
+}
+
+void wait(uint8_t ms)
+{
+    int i = 0;
+
+    TPM0_SC |= 0x00000007; // Set prescaler to 128,
+    TPM0_MOD = 375; // This should configure the timer to 1ms.
+    TPM0_CONF |= 0x0E020000; // Set TRGSEL to 1110 and CSOO to 1
+    TPM0_C0SC |= 0x00000030; //Set MSA, MSB to 11; ELSA, ELSB to 00
+
+    for(i=0; i<ms; i++)
+    {
+        TPM0_SC |= (uint32_t)0x00000008; // turn on timer
+        while(!(TPM0_SC & 0x00000080))
+            ;
+        TPM0_SC &= ~(uint32_t)0x00000008; // Turn off the timer.
+        TPM0_CNT = 0; //clear the timer count
+        TPM0_SC |= 0x00000080; // Reset the timer overflow flag.
+    }
 
 }

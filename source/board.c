@@ -42,9 +42,9 @@ void boardInit(void)
 	uart0Config();
 	uart0Enable();
 
-	llwuConfigure();
-	vllsEnable();
-	vllsConfigure(1);
+    SIM_SOPT2 |= 0x01000000; // Set TPM to use the MCGFLLCLK as a clock source
+    // MCGFLLCLK is either 24MHz or 23 986 176Hz
+    SIM_SCGC6 |= 0x01000000; // Enable TPM0 clock
 
 	PMC_REGSC = 0x08;
 
@@ -64,8 +64,44 @@ void boardInit(void)
 	interruptSetPriority(21,0); // Configure RTC Seconds interrupt as highest priority.
 	interruptEnable(21); //Enable RTC Seconds interrupt.
 
-	i2cInit();
-	interruptSetPriority(9,3); // Configure I2C interrupt as Lowest priority.
-	interruptEnable(9); //Enable I2C interrupt.
+    rtcInit();
+    rtcStart();
+
+    interruptSetPriority(21,0); // Configure RTC Seconds interrupt as highest priority.
+    interruptEnable(21); //Enable RTC Seconds interrupt.
+
+    i2cInit();
+    interruptSetPriority(9,3); // Configure I2C interrupt as Lowest priority.
+    interruptEnable(9); //Enable I2C interrupt.
+
+    interruptSetPriority(22,3); // Configure PIT interrupt as Lowest priority.
+    interruptEnable(9); //Enable PIT interrupt.
+}
+
+void dm365_powerup(void)
+{
+    SIM_SCGC5 |= 0x00002000; //enable Port E clock
+
+    PORTE_PCR2 |= (uint32_t)0x00000100; //Configure portE2 as GPIO (LDO_EN)
+    PORTE_PCR3 |= (uint32_t)0x00000100; //Configure portE3 as GPIO (EN3)
+    PORTE_PCR4 |= (uint32_t)0x00000100; //Configure portE4 as GPIO (EN2)
+    PORTE_PCR5 |= (uint32_t)0x00000100; //Configure portE5 as GPIO (EN1)
+
+    FGPIOE_PCOR = (uint32_t)0x0000003c; //Set portE2-E5 low.
+    FGPIOE_PDDR = (uint32_t)0x0000003c; //Configure portE2-E5 as output.
+
+    FGPIOE_PSOR = (uint32_t)0x00000020; // Set portE5 high. 5V supply
+    wait(5);
+    FGPIOE_PSOR = (uint32_t)0x00000010; // Set portE4 high. 1.35V supply
+    wait(3);
+    FGPIOE_PSOR = (uint32_t)0x00000008; // Set portE3 high. 1.8V supply
+    wait(3);
+    FGPIOE_PSOR = (uint32_t)0x00000004; // Set portE2 high. 3.3V supply
+    wait(1);
+    //FGPIOE_
+}
+
+void dm365_powerdown(void)
+{
 
 }
